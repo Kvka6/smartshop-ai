@@ -1,0 +1,13 @@
+{
+  "name": "smartshop-ai",
+  "version": "1.0.0",
+  "description": "AI-powered shopping aggregator across Amazon, Flipkart, Myntra and more",
+  "scripts": {
+    "dev": "npx concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "start:server": "npm start --prefix server",
+    "start:client": "npm run dev --prefix client"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
