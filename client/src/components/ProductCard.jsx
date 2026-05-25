@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { ExternalLink, Star, Truck, TrendingDown, GitCompareArrows, Zap } from 'lucide-react';
+import { ExternalLink, Star, Truck, TrendingDown, GitCompareArrows, Zap, MessageSquare } from 'lucide-react';
 import PriceChart from './PriceChart';
 import CompareModal from './CompareModal';
+import ReviewsModal from './ReviewsModal';
 
 const PLATFORM_COLORS = {
   Amazon: 'bg-orange-100 text-orange-700',
@@ -22,6 +23,7 @@ function getPlatformClass(source) {
 export default function ProductCard({ product, rank }) {
   const [showChart, setShowChart] = useState(false);
   const [showCompare, setShowCompare] = useState(false);
+  const [showReviews, setShowReviews] = useState(false);
   const isTopPick = rank !== undefined && rank < 3;
   const discountBig = product.discount && product.discount >= 40;
 
@@ -122,6 +124,13 @@ export default function ProductCard({ product, rank }) {
           >
             <GitCompareArrows size={13} />
           </button>
+          <button
+            onClick={() => setShowReviews(true)}
+            className="flex items-center gap-1 px-2.5 py-2.5 border border-amber-200 text-amber-600 text-xs font-semibold rounded-xl hover:bg-amber-50 transition-colors"
+            title="Genuine reviews & videos"
+          >
+            <MessageSquare size={13} />
+          </button>
           <a
             href={product.link}
             target="_blank"
@@ -134,6 +143,7 @@ export default function ProductCard({ product, rank }) {
       </div>
       {showChart && <PriceChart product={product} onClose={() => setShowChart(false)} />}
       {showCompare && <CompareModal product={product} onClose={() => setShowCompare(false)} />}
+      {showReviews && <ReviewsModal product={product} onClose={() => setShowReviews(false)} />}
     </div>
   );
 }

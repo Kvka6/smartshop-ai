@@ -30,9 +30,20 @@ router.get('/', async (req, res) => {
       products = getMockProducts(q, null);
     }
 
+    // Extract brand and key identifiers from the search query
+    const queryWords = q.trim().toLowerCase().split(/\s+/);
+    const queryBrand = extractBrand(q);
+
+    // Filter to only products that match the same brand/model
+    const exactMatches = products.filter((p) => isSameProduct(p, q, queryBrand));
+    const closeMatches = products.filter((p) => isCloseMatch(p, q, queryBrand) && !isSameProduct(p, q, queryBrand));
+
+    // Use exact matches if available, otherwise close matches
+    const matchedProducts = exactMatches.length >= 2 ? exactMatches : [...exactMatches, ...closeMatches];
+
     // Group by platform
     const platformMap = {};
-    for (const p of products) {
+    for (const p of matchedProducts) {
       const platform = normalizePlatform(p.source);
       if (!platformMap[platform]) {
         platformMap[platform] = [];
@@ -126,6 +137,62 @@ function normalizePlatform(source) {
   if (s.includes('raymond') || s.includes('myraymond')) return 'Raymond';
   if (s.includes('marks') || s.includes('m&s')) return 'Marks & Spencer';
   return source;
+}
+
+// Known brands list for extraction
+const KNOWN_BRANDS = [
+  'nike', 'adidas', 'puma', 'reebok', 'levis', "levi's", 'h&m', 'zara', 'samsung',
+  'apple', 'oneplus', 'realme', 'xiaomi', 'redmi', 'poco', 'oppo', 'vivo', 'sony',
+  'boat', 'jbl', 'bose', 'sennheiser', 'beats', 'pepe', 'wrangler', 'allen solly',
+  'peter england', 'van heusen', 'raymond', 'louis philippe', 'arrow', 'us polo',
+  'tommy hilfiger', 'calvin klein', 'gap', 'uniqlo', 'mango', 'forever 21',
+  'roadster', 'highlander', 'urbano', 'snitch', 'mufti', 'woodland', 'bata',
+  'sparx', 'campus', 'skechers', 'new balance', 'asics', 'hp', 'dell', 'lenovo',
+  'asus', 'acer', 'msi', 'lg', 'whirlpool', 'bosch', 'panasonic', 'philips',
+  'titan', 'fastrack', 'casio', 'fossil', 'noise', 'fire-boltt', 'amazfit',
+  'marks & spencer', 'off duty', 'the pant project', 'the souled store',
+];
+
+function extractBrand(query) {
+  const q = query.toLowerCase();
+  for (const brand of KNOWN_BRANDS) {
+    if (q.includes(brand)) return brand;
+  }
+  // Try first word as potential brand
+  return q.split(/\s+/)[0];
+}
+
+function isSameProduct(product, query, queryBrand) {
+  const title = (product.title || '').toLowerCase();
+  const q = query.toLowerCase();
+
+  // Check if brand matches
+  const hasBrand = queryBrand && title.includes(queryBrand);
+  if (!hasBrand) return false;
+
+  // Check if model/key identifiers match (numbers, specific model names)
+  const queryModels = q.match(/\b([a-z]*\d+[a-z\d]*)\b/gi) || []; // alphanumeric model numbers
+  if (queryModels.length > 0) {
+    return queryModels.some((model) => title.toLowerCase().includes(model.toLowerCase()));
+  }
+
+  // For clothing: check if key descriptors match (slim fit, regular, etc.)
+  const keyTerms = q.split(/\s+/).filter((w) => w.length > 3 && w !== queryBrand);
+  const matchCount = keyTerms.filter((term) => title.includes(term)).length;
+  return matchCount >= Math.ceil(keyTerms.length * 0.6);
+}
+
+function isCloseMatch(product, query, queryBrand) {
+  const title = (product.title || '').toLowerCase();
+  const q = query.toLowerCase();
+
+  // Must have same brand
+  if (queryBrand && !title.includes(queryBrand)) return false;
+
+  // At least some key words match
+  const keyTerms = q.split(/\s+/).filter((w) => w.length > 3);
+  const matchCount = keyTerms.filter((term) => title.includes(term)).length;
+  return matchCount >= Math.ceil(keyTerms.length * 0.4);
 }
 
 function estimateDeliveryDays(deliveryStr) {

@@ -23,15 +23,11 @@ export default function CompareModal({ product, onClose }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Extract a clean search query from the product title (remove size/color noise)
+    // Use the full product title for comparison to match exact brand/model
     const cleanQuery = product.title
       .replace(/\(.*?\)/g, '')        // remove parentheses content
-      .replace(/size\s*\w+/gi, '')    // remove "size XL"
-      .replace(/\s*-\s*\w+$/gi, '')   // remove trailing "- Blue"
-      .trim()
-      .split(' ')
-      .slice(0, 6)
-      .join(' ');
+      .replace(/,.*$/g, '')           // remove content after comma
+      .trim();
 
     axios.get(`${API_BASE}/compare`, { params: { q: cleanQuery } })
       .then((r) => setData(r.data))

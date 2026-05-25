@@ -8,6 +8,7 @@ const profileRouter = require('./routes/profile');
 const priceHistoryRouter = require('./routes/priceHistory');
 const dealsRouter = require('./routes/deals');
 const compareRouter = require('./routes/compare');
+const reviewsRouter = require('./routes/reviews');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -32,6 +33,7 @@ app.use('/api/profile', profileRouter);
 app.use('/api/price-history', priceHistoryRouter);
 app.use('/api/deals', dealsRouter);
 app.use('/api/compare', compareRouter);
+app.use('/api/reviews', reviewsRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {
