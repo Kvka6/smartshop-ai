@@ -13,6 +13,9 @@ const reviewsRouter = require('./routes/reviews');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust proxy (needed for express-rate-limit behind Render's reverse proxy)
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(cors({ origin: true }));
 app.use(express.json());
