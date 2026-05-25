@@ -37,7 +37,7 @@ async function searchSerpAPI({ query, budgetMin, budgetMax, country = 'IN' }) {
     originalPriceRaw: item.old_price ? parsePrice(item.old_price) : null,
     discount: computeDiscount(item.price, item.old_price),
     image: item.thumbnail,
-    link: item.link,
+    link: item.product_link || item.link || null,
     source: item.source,
     rating: item.rating || null,
     reviews: item.reviews || null,
